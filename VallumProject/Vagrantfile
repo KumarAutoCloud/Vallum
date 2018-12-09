@@ -1,0 +1,48 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.define "vallum" do |vallum|
+    vallum.vm.box = "bento/ubuntu-18.04"
+    vallum.vm.network "private_network", ip: "192.168.56.11"
+    vallum.vm.hostname = "vallum"
+    vallum.vm.synced_folder ".", "/vagrant", type: "nfs"
+    vallum.vm.provider "virtualbox" do |vb|
+      vb.customize ["modifyvm",  :id, "--name", "vallum"]
+      vb.memory = "1024"
+     end
+
+    vallum.vm.provision "shell", inline: <<-SHELL 
+    sudo apt-get update -y
+    sudo apt-get install software-properties-common -y
+    sudo apt-add-repository ppa:ansible/ansible -y
+    sudo apt-get update -y
+    sudo apt-get install ansible -y
+    sudo apt-get update -y
+    SHELL
+
+
+    vallum.vm.provision "ansible" do |ansible|
+      ansible.playbook = "ansible/playbook.yml"
+      ansible.host_key_checking = false
+      ansible.extra_vars = { ansible_ssh_user: 'vagrant' }
+      ansible.sudo = true
+    end
+
+    config.vm.define "vallumweb" do |vallumweb|
+      vallumweb.vm.box = "bento/ubuntu-18.04"
+      vallumweb.vm.network "private_network", ip: "192.168.56.22"
+      vallumweb.vm.hostname = "vallumweb"
+      vallumweb.vm.synced_folder ".", "/vagrant", type: "nfs"
+      vallumweb.vm.provider "virtualbox" do |vb|
+      vb.customize ["modifyvm",  :id, "--name", "vallumweb"]
+      vb.memory = "1024"
+   end
+  end
+end
+end
+
+

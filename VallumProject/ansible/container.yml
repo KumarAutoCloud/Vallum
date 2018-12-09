@@ -1,0 +1,16 @@
+version: "1"
+services:
+  # Add your containers here, latest alpine docker container
+  # 
+
+   nginx:
+     image: library/alpine:latest
+     ports:
+       - "80:80"
+     command: ['apk add python', ]
+     dev_overrides:
+       environment:
+         - "DEBUG=1"
+  
+registries: {}
+ 

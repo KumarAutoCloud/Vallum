@@ -1,0 +1,63 @@
+# This should be your Ansible playbooks to provision your containers.
+# An inventory will be automatically created using the names of the services
+# from your container.yml file.
+# Add any roles or other modules you'll need to this directory too.
+# For many examples of roles, check out Ansible Galaxy: https://galaxy.ansible.com/
+#
+---
+- hosts: nginx
+  gather_facts: false
+  vars:
+    web_root: /www
+    web_root_owner: www
+    web_root_group: www 
+
+  tasks:
+    - name: install nginx
+      apk:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - nginx
+        - git
+
+    - name: make backup of original nginx.conf
+      command: mv -f  "/etc/nginx/nginx.conf"  "/etc/nginx/nginx.conf.orig"
+      
+
+    - name: Copy nginx config
+      copy:
+        src: configure/nginx.conf
+        dest: /etc/nginx/nginx.conf
+    
+
+ 
+    - name: set INIT status
+      service:
+        name: nginx
+        enabled: yes
+ 
+    - name: Creating new user and group web_root for nginx
+      #user: name=www uid=1000 shell=/bin/bash groups=www comment=nginx application user
+      user: name=www shell=/bin/bash home=/www groups=www,sudo 
+
+    - name: create directory for webroot
+      file:
+        state: directory
+        dest: "{{ web_root }}"
+        owner:  "{{ web_root_owner }}"
+        group:  "{{ web_root_group }}"
+
+    - name: Ensure www owns the nginx directory
+      file: path=/var/lib/nginx state=directory owner= "{{ web_root_owner }}" group= "{{ web_root_group }}"
+
+    - name: Copy static web page 
+      copy: src=webfiles/index.html dest=/www/index.html owner= "{{ web_root_owner }}" group= "{{ web_root_group }}"
+
+
+    - name: start the Nginx service
+      service:
+        name: nginx
+        state: started
+
+

@@ -1,0 +1,59 @@
+---
+- hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Enables https method for APT
+      apt: name={{ item }} state=present
+      with_items:
+        - apt-transport-https
+        - ca-certificates
+
+    - name: Install docker GPG key
+      apt_key: keyserver=hkp://p80.pool.sks-keyservers.net:80 id=58118E89F3A912897C070ADBF76221572C52609D state=present
+      tags:
+        - docker
+        - gpg_key
+
+    - name: Add docker apt repository
+      apt_repository: repo="deb https://apt.dockerproject.org/repo bento/ubuntu-18.04 main" state=present 
+      tags:
+        - docker
+        - apt_repository
+
+    - name: Update apt-cache
+      apt: update_cache=yes
+      tags:
+        - docker
+        - apt_cache
+
+    - name: Purge the old repo if it exists
+      apt: name={{ item }} purge=yes
+      with_items:
+        - "lxc-docker*"
+        - "docker.io*"
+      ignore_errors: yes
+      tags:
+        - docker
+        - apt_purge
+
+    - name: Install docker and python packages
+      apt: name={{ item }} state=present
+      with_items:
+        - docker-engine 
+        - python 
+        - python-pip 
+        - libffi-dev 
+        - libssl-dev 
+        - python-dev 
+        - git 
+
+
+    - name: Install ansible-container
+      pip:
+        name: ansible-container
+
+    - name: Setup docker to allow access via port rather than socket
+      lineinfile: dest=/etc/systemd/system/multi-user.target.wants/docker.service regexp="^ExecStart=/usr/bin/dockerd -H fd://" line="ExecStart=/usr/bin/docker daemon -H 0.0.0.0:2375"
+    - name: Restart docker service
+      shell: " sudo service docker restart "
