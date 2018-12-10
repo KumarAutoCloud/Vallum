@@ -1,4 +1,4 @@
-1.       Create a hosted git repository account of your choice (if you do not already possess one) e.g. github, gitlab, bitbucket, etc.
+1.       Create a hosted git repository account 
 
 2.       Provide us with the account name
 
@@ -16,7 +16,7 @@ d.       Write playbook/playbooks to:
 
                                                            i.      Install and start docker
 
-                                                           ii.      Build a docker container based on the official Alpine Linux container (library/alpine:latest)
+                                                           ii.      Build a docker container based on the official Alpine Linux                                                                             container (library/alpine:latest)
 
                                                            iii.      Build the container so that nginx is installed and started
 
@@ -34,5 +34,5 @@ Install vagrant version 2.2.2
 Install VirtualBox version 5.2.22
 
 Git repository:
-
+https://github.com/KumarAutoCloud/Vallum.git
 
